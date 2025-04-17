@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="logo_red2.jpg">
+  <title>Locadores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      max-width: 200px;
+      height: auto;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 24px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #resultado {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: none;
+      background-color: #f9f9f9;
+    }
+    .error {
+      color: #e74c3c;
+      font-weight: bold;
+      text-align: center;
+    }
+    .datos-usuario {
+      line-height: 1.8;
+    }
+    .info-row {
+      margin-bottom: 10px;
+      display: flex;
+    }
+    .info-label {
+      font-weight: bold;
+      min-width: 130px;
+    }
+    .info-value {
+      flex: 1;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .title {
+      background-color: #3498db;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .pagos-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .pagos-table th, .pagos-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    .pagos-table th {
+      background-color: #f2f2f2;
+    }
+    .estado {
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 13px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    /* Añade estos estilos al bloque CSS existente */
+
+/* Mejora la responsividad general */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+  
+  .container {
+    padding: 15px;
+  }
+  
+  h1 {
+    font-size: 20px;
+  }
+  
+  /* Mejora el manejo de información del locador */
+  .info-row {
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+  
+  .info-label {
+    min-width: auto;
+    margin-bottom: 3px;
+  }
+  
+  .info-value {
+    word-break: break-word;
+  }
+  
+  /* Ajusta la tabla para pantallas pequeñas */
+  .pagos-table {
+    font-size: 14px;
+  }
+  
+  .pagos-table th, .pagos-table td {
+    padding: 5px;
+  }
+  
+  /* Estilo específico para la información del locador */
+  .title {
+    font-size: 16px;
+    padding: 8px;
+  }
+}
+
+/* Asegura que los textos largos se ajusten */
+.info-value {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Mejora la visualización de la tabla en todas las pantallas */
+.pagos-table {
+  table-layout: fixed;
+}
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <!-- Utilizamos una imagen placeholder con el tamaño adecuado -->
+      <img src="logo_red.jpg" alt="Logo Consulta Locadores">
+    </div>
+    
+    <h1>Sistema de Consulta de Locadores</h1>
+    
+    <div class="form-group">
+      <label for="ruc">Ingrese su número de RUC:</label>
+      <input type="text" id="ruc" placeholder="Ejemplo: 10719022385" maxlength="11" onkeypress="return validarNumeros(event)" oninput="validarRUC()">
+      <div id="error-ruc" class="error-message">El RUC debe tener 11 dígitos numéricos</div>
+    </div>
+    
+    <button id="btn-consultar" onclick="buscarRUC()">Consultar información</button>
+
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    // Datos de locadores importados desde el CSV
+    const datos = [
+  { "Telefono": "970598719", "RUC": "10708254512", "Nombres": "SANCHEZ LIZARDO ALICIA", "Profesion": "ASISTENTE ADMINISTRATIVO", "Especifica": "SERVICIO DE ASISTENCIA TÉCNICA ADMINISTRATIVA", "MicroRed": "HOSP. MARÍA AUXILIADORA", "Ipress": "HOSP. MARÍA AUXILIADORA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 2,500.00", "FEBRERO": "S/ 2,500.00", "MONTO_DEUDA": "S/ 5,000.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "981651275", "RUC": "10426814868", "Nombres": "BURGA BUSTAMANTE ERLITA", "Profesion": "ASISTENTE ADMINISTRATIVO", "Especifica": "SERVICIO DE ASISTENCIA TÉCNICA ADMINISTRATIVA", "MicroRed": "MR. PIPUS", "Ipress": "C.S. PIPUS", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,800.00", "FEBRERO": "S/ 1,800.00", "MONTO_DEUDA": "S/ 3,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "976789544", "RUC": "10721880511", "Nombres": "LAYZA VEGA ANDRE JHADIR", "Profesion": "BIÓLOGO", "Especifica": "SERVICIO ESPECIALIZADO EN TEMAS DE BIOLOGÍA", "MicroRed": "MR. TINGO", "Ipress": "C.S. TINGO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "984088707", "RUC": "10432769092", "Nombres": "CHAUCA ZEGARRA CARLOS JAVIER", "Profesion": "BIÓLOGO", "Especifica": "SERVICIO ESPECIALIZADO EN TEMAS DE BIOLOGÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. COLCAMAR", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "956723431", "RUC": "10474471808", "Nombres": "GONZALES CHAVEZ EDWIN JONATHAN", "Profesion": "BIÓLOGO", "Especifica": "SERVICIO ESPECIALIZADO EN TEMAS DE BIOLOGÍA", "MicroRed": "MR. PIPUS", "Ipress": "C.S. PIPUS", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 3,100.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "978069404", "RUC": "10422533287", "Nombres": "MENDOZA CIEZA DANITH", "Profesion": "LICENCIADO EN ENFERMERÍA", "Especifica": "ATENCION ESPECIALIZADA EN ENFERMERÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "C.S. 09 DE ENERO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "928128113", "RUC": "10483141705", "Nombres": "SOPLA VILCA LOIDI", "Profesion": "LICENCIADO EN ENFERMERÍA", "Especifica": "ATENCION ESPECIALIZADA EN ENFERMERÍA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "974113967", "RUC": "10700357886", "Nombres": "TRAUCO EPIQUIEN JUANITA", "Profesion": "LICENCIADO EN ENFERMERÍA", "Especifica": "ATENCION ESPECIALIZADA EN ENFERMERÍA", "MicroRed": "MR. LUYA", "Ipress": "P.S. CONILA COHECHAN", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "921670450", "RUC": "10766717174", "Nombres": "DETT BRAVO YLULIANA", "Profesion": "LICENCIADO EN ENFERMERÍA", "Especifica": "ATENCION ESPECIALIZADA EN ENFERMERÍA", "MicroRed": "MR. JUMBILLA", "Ipress": "P.S. COROSHA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "918925851", "RUC": "10483711722", "Nombres": "HUAMAN TRIGOSO ELENITA MERCEDES", "Profesion": "LICENCIADO EN ENFERMERÍA", "Especifica": "ATENCION ESPECIALIZADA EN ENFERMERÍA", "MicroRed": "MR. TINGO", "Ipress": "C.S. TINGO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "947495581", "RUC": "10339609441", "Nombres": "PORTOCARRERO ARBILDO KATY", "Profesion": "LIMPIEZA", "Especifica": "SERVICIO DE LIMPIEZA DE LOCALES", "MicroRed": "HOSP. MARÍA AUXILIADORA", "Ipress": "HOSP. MARÍA AUXILIADORA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "916817782", "RUC": "10407539732", "Nombres": "RODRIGUEZ ROJAS JAIME", "Profesion": "LIMPIEZA", "Especifica": "SERVICIO DE LIMPIEZA DE LOCALES", "MicroRed": "HOSP. MARÍA AUXILIADORA", "Ipress": "HOSP. MARÍA AUXILIADORA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "952852606", "RUC": "10460037862", "Nombres": "CACHAY GUELAC LLANELI", "Profesion": "LIMPIEZA", "Especifica": "SERVICIO DE LIMPIEZA DE LOCALES", "MicroRed": "MR. LUYA", "Ipress": "C.S. LUYA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "939646478", "RUC": "10474958740", "Nombres": "ALTAMIRANO BACA SEILY", "Profesion": "LIMPIEZA", "Especifica": "SERVICIO DE LIMPIEZA DE LOCALES", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "C.S. 09 DE ENERO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "910984048", "RUC": "10700423366", "Nombres": "JALCA PICON ROSARIO", "Profesion": "LIMPIEZA", "Especifica": "SERVICIO DE LIMPIEZA DE LOCALES", "MicroRed": "MR. POMACOCHAS", "Ipress": "C.S. POMACOCHAS", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "964079252", "RUC": "10334088699", "Nombres": "CHAVEZ TRUJILLO MARIA", "Profesion": "LIMPIEZA", "Especifica": "SERVICIO DE LIMPIEZA", "MicroRed": "MR. SANTO TOMÁS", "Ipress": "C.S. SANTO TOMAS", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 1,300.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "955480866", "RUC": "10465822096", "Nombres": "LOPEZ RUIZ BETSY", "Profesion": "MÉDICO PEDIATRA", "Especifica": "SERVICIO DE MEDICINA EN PEDIATRIA", "MicroRed": "MR. POMACOCHAS", "Ipress": "C.S. POMACOCHAS", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 8,000.00", "MONTO_DEUDA": "S/ 8,000.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "972803177", "RUC": "10469330813", "Nombres": "CASTAÑEDA CHAVEZ RUTH JAKELINE", "Profesion": "NUTRICIONISTA", "Especifica": "SERVICIO ESPECIALIZADOS EN NUTRICION", "MicroRed": "MR. POMACOCHAS", "Ipress": "C.S. POMACOCHAS", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "955488920", "RUC": "10759778371", "Nombres": "OSORIO PRUDENCIO ROSMARY BELINDA", "Profesion": "OBSTETRA", "Especifica": "SERVICIO ESPECIALIZADO EN OBSTETRICIA", "MicroRed": "MR. PEDRO RUIZ", "Ipress": "C.S. PEDRO RUIZ GALLO, P.S. SHIPASBAMBA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "966794557", "RUC": "10476672690", "Nombres": "BALABARCA ACUÑA JAQUELINE LOURDES", "Profesion": "OBSTETRA", "Especifica": "SERVICIO ESPECIALIZADO EN OBSTETRICIA", "MicroRed": "MR. MARIA", "Ipress": "C.S. MARIA", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "969021456", "RUC": "10749855458", "Nombres": "SAMILLAN NAZARIO STEPHANIE DEL PILAR", "Profesion": "OBSTETRA", "Especifica": "SERVICIO ESPECIALIZADO EN OBSTETRICIA", "MicroRed": "MR. LUYA", "Ipress": "P.S. CHOCTA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "968220097", "RUC": "10704848159", "Nombres": "CHAVEZ VARGAS DEYSY SUSELLY", "Profesion": "OBSTETRA", "Especifica": "SERVICIO ESPECIALIZADO EN OBSTETRICIA", "MicroRed": "MR. OMIA", "Ipress": "C.S. OMIA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "925134589", "RUC": "10732016291", "Nombres": "GARCIA SIPION AURORITA ELIZABETH", "Profesion": "OBSTETRA", "Especifica": "SERVICIO ESPECIALIZADO EN OBSTETRICIA", "MicroRed": "MR. PEDRO RUIZ", "Ipress": "P.S. SHIPASBAMBA", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 3,100.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "977393232", "RUC": "10471716486", "Nombres": "PEREZ LUNA ELIA VIOLETA", "Profesion": "OBSTETRA", "Especifica": "SERVICIO ESPECIALIZADO EN OBSTETRICIA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 3,100.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "962392088", "RUC": "10467738513", "Nombres": "SANCHEZ FERNANDEZ ROSLADY", "Profesion": "ODONTOLOGÍA", "Especifica": "SERVICIO DE ATENCIÓN MÉDICA EN ODONTOLOGÍA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "979347391", "RUC": "10702306171", "Nombres": "OCAMPO CHICHIPE YESENIA FLOR", "Profesion": "ODONTOLOGÍA", "Especifica": "SERVICIO DE ATENCIÓN MÉDICA EN ODONTOLOGÍA", "MicroRed": "MR. LAMUD", "Ipress": "C.S. LAMUD", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 3,100.00", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 6,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "945444900", "RUC": "10465749917", "Nombres": "CASTRO REYNA ANA BILENY", "Profesion": "ODONTOLOGÍA", "Especifica": "SERVICIO DE ATENCIÓN MÉDICA EN ODONTOLOGÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. VIRGEN ASUNTA", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 3,100.00", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "988041546", "RUC": "10708643462", "Nombres": "CHICHIPE HORNA SANTOS MEDALI", "Profesion": "ODONTOLOGÍA", "Especifica": "SERVICIO DE ATENCIÓN MÉDICA EN ODONTOLOGÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. VIRGEN ASUNTA", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 3,100.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "954605934", "RUC": "10711422639", "Nombres": "OYARCE ROJAS JHON KENNEDY", "Profesion": "ODONTOLOGÍA", "Especifica": "SERVICIO DE ATENCIÓN MÉDICA EN ODONTOLOGÍA", "MicroRed": "MR. PEDRO RUIZ", "Ipress": "C.S. PEDRO RUIZ GALLO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 2,067.00", "FEBRERO": "S/ 2,067.00", "MONTO_DEUDA": "S/ 4,134.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "987901917 - 918602851", "RUC": "10724682796", "Nombres": "CERVERA SANTA CRUZ YENISER", "Profesion": "PSICÓLOGO", "Especifica": "SERVICIO ESPECIALIZADO EN PSICOLOGÍA", "MicroRed": "MR. YERBABUENA", "Ipress": "C.S. JALCA GRANDE", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 1,034.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 1,034.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "971889560", "RUC": "10167489465", "Nombres": "BAUTISTA ALZAMORA SILVIA", "Profesion": "SECRETARIA", "Especifica": "SERVICIO SECRETARIAL", "MicroRed": "MR. PEDRO RUIZ", "Ipress": "C.S. PEDRO RUIZ GALLO", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 1,600.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "972088197", "RUC": "10415143406", "Nombres": "PULCE JANAMPA TOMY GERSON", "Profesion": "TÉCNICO EN COMPUTACIÓN", "Especifica": "SERVICIO DE SOPORTE INFORMATICO", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "973331039", "RUC": "10428670758", "Nombres": "MARTINEZ ANTAZU GISELL ROCIO", "Profesion": "TÉCNICO EN COMPUTACIÓN", "Especifica": "SERVICIO DE SOPORTE INFORMATICO", "MicroRed": "MR. POMACOCHAS", "Ipress": "C.S. POMACOCHAS", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "916251678", "RUC": "10432770325", "Nombres": "QUILO MALQUI TOBIAS", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. NUEVO JAEN - SALAS", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 2,100.00", "FEBRERO": "S/ 2,100.00", "MONTO_DEUDA": "S/ 4,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "955890737", "RUC": "10459211719", "Nombres": "PUSCAN HUAMAN LENING", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. NUEVO OMIA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,800.00", "FEBRERO": "S/ 1,800.00", "MONTO_DEUDA": "S/ 3,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "945591725", "RUC": "10745624087", "Nombres": "LOPEZ DÍAZ ERLITH ISABEL", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TINGO", "Ipress": "P.S. SAN RAMON", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,800.00", "FEBRERO": "S/ 1,800.00", "MONTO_DEUDA": "S/ 3,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "941956625", "RUC": "10338145522", "Nombres": "GOMEZ TRIGOSO MILAGRITOS DEL CARMEN", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. LUYA", "Ipress": "P.S. COLMATA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "944494507", "RUC": "10408929542", "Nombres": "MAS VILCHEZ CARLOTA NEGRI", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. ZARUMILLA", "Ipress": "P.S. LEGIA CHICO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "939594193", "RUC": "10410004548", "Nombres": "HERRERA SANTILLAN MARILU", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "951880354", "RUC": "10418706142", "Nombres": "RODRIGUEZ BUSTAMANTE FLORENCIA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TOTORA", "Ipress": "P.S. CHIRIMOTO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "995609772", "RUC": "10419191561", "Nombres": "MONSALVE RAFAEL ARELI ROXANA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CAMPORREDONDO", "Ipress": "P.S. COCOCHO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+  { "Telefono": "956463210", "RUC": "10420786129", "Nombres": "ACOSTA ARBILDO NANCY", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TOTORA", "Ipress": "C.S. TOTORA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+
+  { "Telefono": "930104805", "RUC": "10425668493", "Nombres": "MORI AREVALO EVERLITH", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. LEYMEBAMBA", "Ipress": "C.S. LEYMEBAMBA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "978862549", "RUC": "10458100590", "Nombres": "ROJAS TORRES GLADYS", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. VIRGEN ASUNTA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "920844850", "RUC": "10470074669", "Nombres": "DEL CASTILLO PORTAL SINTIA YOVANA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. LONGAR", "Ipress": "C.S. MARISCAL BENABIDES", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "992604866", "RUC": "10479392281", "Nombres": "PINPINCOS CRUZ MILY", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. LUYA", "Ipress": "P.S. CONILA COHECHAN", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "939943741", "RUC": "10621340579", "Nombres": "LLANOS ALVARADO DIANA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. PEDRO RUIZ", "Ipress": "C.S. PEDRO RUIZ GALLO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "941175900 - 997408189", "RUC": "10700782978", "Nombres": "ZAMORA ROJAS JOSE CARLOS", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CAMPORREDONDO", "Ipress": "P.S. LA LIBERTAD", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "928475109", "RUC": "10700820284", "Nombres": "CLAVO SILVA DORALIZA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. LEVANTO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "924051015", "RUC": "10722866113", "Nombres": "LOPEZ LOPEZ LLULISSA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. NUEVO CHIRIMOTO", "Ipress": "P.S. LA PRIMAVERA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "918354127", "RUC": "10728050468", "Nombres": "REVILLA VILLANUEVA KATERINE", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. YERBABUENA", "Ipress": "P.S. MONTEVIDEO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "963976097", "RUC": "10735409421", "Nombres": "CHAVEZ CHUQUIPIONDO CLARIBEL", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. QUILLILLIC", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "906551203", "RUC": "10736970207", "Nombres": "CHAVEZ QUISPE DANI LISBET", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. LAMUD", "Ipress": "P.S. LUYA VIEJO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "924085867", "RUC": "10743621102", "Nombres": "PINGUS SANTIAGO DARLYT", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. COCHA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "917794920", "RUC": "10744389378", "Nombres": "GONGORA NOVOA LLOISI GEILITH", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TOTORA", "Ipress": "C.S. TOTORA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "947673542", "RUC": "10750756382", "Nombres": "TORRES CRUZ WILIAN MIGUEL", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TOTORA", "Ipress": "P.S. ACHAMAL", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "941572764", "RUC": "10756086915", "Nombres": "RIVA TORRES SANDIVEL", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TOTORA", "Ipress": "P.S. LIMABAMBA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "971670493", "RUC": "10766845032", "Nombres": "ROJAS VELASQUEZ HILDA NOEMI", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. ZARUMILLA", "Ipress": "P.S. LEGIA CHICO, P.S. LEGUIA CHICO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "938659828 - 964952204", "RUC": "10772848841", "Nombres": "SANTAMARIA CHASQUEZ BLANCA IRIS", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. NUEVO CHIRIMOTO", "Ipress": "P.S. NUEVO PROGRESO", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "932252249", "RUC": "10736934278", "Nombres": "MUÑOZ CASTREJON KEYSI DARIANA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. MARIA", "Ipress": "P.S. BALERIANA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,800.00", "FEBRERO": "S/ 1,800.00", "MONTO_DEUDA": "S/ 3,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "936152746", "RUC": "10734809450", "Nombres": "QUIJANO MALQUE DELMI ENITH", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. EL MOLINO", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "910657411", "RUC": "10755302975", "Nombres": "RAMOS RAMOS RIBERT", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. GETZEMANI", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "957888190", "RUC": "10736952039", "Nombres": "HUAMAN CULQUI DULER", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. MARIA", "Ipress": "P.S. CHUILON", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,800.00", "FEBRERO": "S/ 1,800.00", "MONTO_DEUDA": "S/ 3,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "938858305", "RUC": "10736909427", "Nombres": "BUSTOS PUERTA LLOSILA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. MARIA", "Ipress": "P.S. BUENA VISTA", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 1,600.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "954566090", "RUC": "10433694011", "Nombres": "DAMACEN LLAJA ELITA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. LUYA", "Ipress": "P.S. CHOCTA", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 1,600.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "957391584", "RUC": "10444904980", "Nombres": "PORTOCARRERO DIAZ NOEMI", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. CAMPORREDONDO", "Ipress": "P.S. COCOCHO", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 1,600.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "950213276", "RUC": "10445985657", "Nombres": "OCAMPO ALVA LLOANI LUCIA", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "HOSP. MARÍA AUXILIADORA", "Ipress": "HOSP. MARÍA AUXILIADORA", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 1,600.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "984417825", "RUC": "10715687599", "Nombres": "CULQUI PUERTA DEIVIS", "Profesion": "TÉCNICO EN ENFERMERÍA", "Especifica": "SERVICIO DE AUXILIAR EN ENFERMERÍA", "MicroRed": "MR. TINGO", "Ipress": "P.S. EL REJO", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 1,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "924588265", "RUC": "10735409641", "Nombres": "ILIQUIN OCAMPO LLULY", "Profesion": "TÉCNICO EN FARMACIA", "Especifica": "SERVICIO DE RECEPCIÓN Y DISPOSICIÓN PRODUCTOS FARMACEUTICOS", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,600.00", "FEBRERO": "S/ 1,600.00", "MONTO_DEUDA": "S/ 3,200.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "918897385", "RUC": "10754082033", "Nombres": "MERINO ABAD ERIKA PAOLA", "Profesion": "TECNÓLOGO MÉDICO", "Especifica": "SERVICIO ESPECIALIZADO EN TECNOLOGÍA MEDICA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. PEDRO CASTRO ALVA", "Meses": "ENERO", "Total": "1", "ENERO": "S/ 3,100.00", "FEBRERO": "", "MONTO_DEUDA": "S/ 3,100.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "922456220", "RUC": "10435094843", "Nombres": "VISALOT RIOS SECUNDINO", "Profesion": "VIGILANTE", "Especifica": "SERVICIO DE VIGILANCIA", "MicroRed": "MR. CHACHAPOYAS", "Ipress": "P.S. COLCAMAR", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "923089701", "RUC": "10068442180", "Nombres": "ROJAS MATOS JESUS EDGAR", "Profesion": "VIGILANTE", "Especifica": "SERVICIO DE VIGILANCIA", "MicroRed": "MR. LUYA", "Ipress": "C.S. LUYA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "956995529", "RUC": "10267307372", "Nombres": "CALONGOS CATPO VICTORINO", "Profesion": "VIGILANTE", "Especifica": "SERVICIO DE VIGILANCIA", "MicroRed": "MR. POMACOCHAS", "Ipress": "C.S. POMACOCHAS", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "931072976", "RUC": "10757357505", "Nombres": "COLLAZOS VARGAS CARLOS YULIÑO", "Profesion": "VIGILANTE", "Especifica": "SERVICIO DE VIGILANCIA", "MicroRed": "HOSP. MARÍA AUXILIADORA", "Ipress": "HOSP. MARÍA AUXILIADORA", "Meses": "ENERO,FEBRERO", "Total": "2", "ENERO": "S/ 1,300.00", "FEBRERO": "S/ 1,300.00", "MONTO_DEUDA": "S/ 2,600.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" },
+{ "Telefono": "948365449", "RUC": "10620883587", "Nombres": "VASQUEZ LOBATO STEVENS FRAN DUX", "Profesion": "VIGILANTE", "Especifica": "SERVICIO DE VIGILANCIA", "MicroRed": "MR. POMACOCHAS", "Ipress": "P.S. BUENOS AIRES", "Meses": "FEBRERO", "Total": "1", "ENERO": "", "FEBRERO": "S/ 1,516.00", "MONTO_DEUDA": "S/ 1,516.00", "Estado": "Pago Pendiente", "Observacion": "Locador Regular" }
+
+]
+    
+    ;
+
+    // Función para validar que solo se ingresen números
+    function validarNumeros(event) {
+      const charCode = (event.which) ? event.which : event.keyCode;
+      if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+        return false;
+      }
+      return true;
+    }
+
+    // Función para validar que el RUC tenga 11 dígitos
+    function validarRUC() {
+      const ruc = document.getElementById('ruc').value.trim();
+      const errorRuc = document.getElementById('error-ruc');
+      const btnConsultar = document.getElementById('btn-consultar');
+      
+      if (ruc.length > 0 && ruc.length !== 11) {
+        errorRuc.style.display = 'block';
+        btnConsultar.disabled = true;
+        return false;
+      } else {
+        errorRuc.style.display = 'none';
+        btnConsultar.disabled = false;
+        return true;
+      }
+    }
+
+    function buscarRUC() {
+      const rucIngresado = document.getElementById('ruc').value.trim();
+      const resultado = document.getElementById('resultado');
+      
+      // Validación adicional antes de buscar
+      if (!validarRUC() && rucIngresado.length > 0) {
+        resultado.style.display = 'block';
+        resultado.innerHTML = `<p class="error">El RUC debe tener exactamente 11 dígitos</p>`;
+        return;
+      }
+      
+      if (!rucIngresado) {
+        resultado.style.display = 'block';
+        resultado.innerHTML = `<p class="error">Por favor ingrese un número de RUC</p>`;
+        return;
+      }
+
+      resultado.style.display = 'block';
+      const persona = datos.find(p => p.RUC === rucIngresado);
+      
+      if (persona) {
+        // Formatear la información de pagos
+        let pagoEnero = persona.ENERO ? persona.ENERO : "No aplica";
+        let pagoFebrero = persona.FEBRERO ? persona.FEBRERO : "No aplica";
+        
+        resultado.innerHTML = `
+          <div class="title">Información del Locador</div>
+          
+          <div class="datos-usuario">
+            <div class="info-row">
+              <div class="info-label">Nombres:</div>
+              <div class="info-value">${persona.Nombres}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">RUC:</div>
+              <div class="info-value">${persona.RUC}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">Teléfono:</div>
+              <div class="info-value">${persona.Telefono}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">Profesión:</div>
+              <div class="info-value">${persona.Profesion}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">Servicio:</div>
+              <div class="info-value">${persona.Especifica}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">MicroRed:</div>
+              <div class="info-value">${persona.MicroRed}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">IPRESS:</div>
+              <div class="info-value">${persona.Ipress}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">Meses:</div>
+              <div class="info-value">${persona.Meses}</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">Estado:</div>
+              <div class="info-value"><span class="estado">${persona.Estado}</span></div>
+            </div>
+            
+            <div class="info-row">
+              <div class="info-label">Observación:</div>
+              <div class="info-value">${persona.Observacion}</div>
+            </div>
+          </div>
+          
+          <div class="title" style="margin-top: 20px;">Detalle de Pagos</div>
+          
+          <table class="pagos-table">
+            <tr>
+              <th>Mes</th>
+              <th>Monto</th>
+            </tr>
+            <tr>
+              <td>ENERO</td>
+              <td>${pagoEnero}</td>
+            </tr>
+            <tr>
+              <td>FEBRERO</td>
+              <td>${pagoFebrero}</td>
+            </tr>
+            <tr>
+              <th>Deuda Total</th>
+              <th>${persona.MONTO_DEUDA}</th>
+            </tr>
+          </table>
+        `;
+      } else {
+        resultado.innerHTML = `<p class="error">RUC no encontrado en el sistema. Verifique e intente nuevamente.</p>`;
+      }
+    }
+
+    // Permitir búsqueda al presionar Enter
+    document.getElementById('ruc').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        buscarRUC();
+      }
+    });
+  </script>
+</body>
+</html>
